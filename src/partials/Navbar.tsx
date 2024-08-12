@@ -12,12 +12,15 @@ const Navbar = () => (
         Trent Cowden
       </a>
       <NavMenu>
-        <NavMenuItem href="https://buymeacoffee.com/trentcowden">
-          Buy Me a Coffee
-        </NavMenuItem>
         <NavMenuItem href="https://github.com/trentcowden">GitHub</NavMenuItem>
         <NavMenuItem href="https://www.linkedin.com/in/trentcowden/">
           LinkedIn
+        </NavMenuItem>
+        <NavMenuItem href="https://buymeacoffee.com/trentcowden">
+          Buy Me a Coffee
+        </NavMenuItem>
+        <NavMenuItem href="mailto:trentcowdenapps@proton.me">
+          Email Me
         </NavMenuItem>
       </NavMenu>
     </NavbarTwoColumns>
