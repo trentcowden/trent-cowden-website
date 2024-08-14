@@ -7,10 +7,7 @@
     "start": "astro dev",
     "build": "astro build",
     "preview": "astro preview",
-    "clean": "rimraf dist",
-    "lint": "eslint --ext .js,.jsx,.ts,.tsx,.astro .",
-    "build-types": "tsc --noEmit --pretty",
-    "prepare": "husky install"
+    "lint": "eslint --ext .js,.jsx,.ts,.tsx,.astro ."
   },
   "devDependencies": {
     "@astrojs/react": "^3.0.7",
