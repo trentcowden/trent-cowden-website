@@ -14,7 +14,7 @@ const ProjectList = () => (
   >
     <div className="flex flex-col gap-6">
       <Project
-        href="https://testflight.apple.com/join/2v463DxW"
+        href="https://apps.apple.com/us/app/tov-a-good-bible-app/id6482045395"
         description={
           <>
             Inspired by the Hebrew word for "good," <strong>tov</strong> is a
