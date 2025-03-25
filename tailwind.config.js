@@ -8,12 +8,11 @@ module.exports = {
     extend: {
       colors: {
         bd: '#00000044',
-        bg1: '#231b16',
-        bg2: '#2c231c',
-        bg3: '#342a22',
-        fg1: '#f4f2f1',
-        fg2: '#d8d3cf',
-        fg3: '#bcb4ae',
+        bg1: '#15120f',
+        bg2: '#1b1613',
+        bg3: '#201b18',
+        fg1: '#e8e5e3',
+        fg2: '#ba887d',
         p1: '#d1a17a',
         p2: '#b88256',
         ph: 'hsla(27, 49%, 65%, 0.3)',

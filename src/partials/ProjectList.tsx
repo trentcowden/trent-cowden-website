@@ -17,12 +17,12 @@ const ProjectList = () => (
         href="https://apps.apple.com/us/app/tov-a-good-bible-app/id6482045395"
         description={
           <>
-            Inspired by the Hebrew word for "good," <strong>tov</strong> is a
-            delightfully simple yet powerful Bible app designed to help you
-            enjoy and study Scripture.
+            Read Scripture in its purest form with Tov, a Bible app that brings
+            focus and depth to your reading with its minimalist design and
+            insightful cross-references.
           </>
         }
-        name="tov"
+        name="Tov"
         svg={<Tov />}
       />
       <Project
