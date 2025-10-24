@@ -1,5 +1,6 @@
 import type { File } from '@google-cloud/storage'
 import type { APIRoute } from 'astro'
+import { parseStream } from 'music-metadata'
 import { bucket } from '../../../firebase'
 
 interface AudiobookMetadata {
@@ -35,6 +36,47 @@ export const GET: APIRoute = async ({ site }) => {
           expires: Date.now() + 365 * 24 * 60 * 60 * 1000, // 1 year
         })
 
+        // Get audio duration - check if cached in metadata first
+        let duration: string | undefined
+        if (metadata.metadata?.duration) {
+          // Use cached duration from file metadata
+          duration = metadata.metadata.duration as string
+          console.log(`Using cached duration for ${file.name}: ${duration}`)
+        } else {
+          // Parse duration from file (only for new/uncached files)
+          try {
+            console.log(`Parsing duration for ${file.name}...`)
+            const stream = file.createReadStream()
+            const audioMetadata = await parseStream(
+              stream,
+              {
+                mimeType: file.name.toLowerCase().endsWith('.m4b')
+                  ? 'audio/mp4'
+                  : 'audio/mpeg',
+              },
+              { duration: true }
+            )
+            console.log(
+              `Audio metadata for ${file.name}:`,
+              audioMetadata.format
+            )
+            if (audioMetadata.format.duration) {
+              duration = formatDuration(audioMetadata.format.duration)
+              console.log(`Formatted duration: ${duration}`)
+              // Cache the duration in file metadata for future requests
+              await file.setMetadata({
+                metadata: {
+                  ...metadata.metadata,
+                  duration,
+                },
+              })
+              console.log(`Cached duration for ${file.name}`)
+            }
+          } catch (error) {
+            console.error(`Failed to get duration for ${file.name}:`, error)
+          }
+        }
+
         // Extract filename without extension
         const filename = file.name
           .replace('audiobooks/', '')
@@ -55,7 +97,8 @@ export const GET: APIRoute = async ({ site }) => {
           author = parts[1]?.trim().replace(/_/g, ' ') ?? 'Unknown Author'
         }
 
-        const title = (series ? `${series} - ` : '') + (name || 'Untitled')
+        const title =
+          (series ? `${series} - ` : '') + (name || 'Untitled') + ` - ${author}`
         return {
           title,
           author,
@@ -70,12 +113,15 @@ export const GET: APIRoute = async ({ site }) => {
           type: file.name.toLowerCase().endsWith('.m4b')
             ? 'audio/x-m4b'
             : 'audio/mpeg',
+          duration,
         }
       })
     )
 
     // Sort by publication date (newest first)
     audiobooks.sort((a, b) => b.pubDate.getTime() - a.pubDate.getTime())
+
+    console.log(`Found ${audiobooks.length} audiobooks`)
 
     // Generate RSS feed
     const rss = generateRSS(
@@ -86,6 +132,7 @@ export const GET: APIRoute = async ({ site }) => {
     return new Response(rss, {
       headers: {
         'Content-Type': 'application/xml; charset=utf-8',
+        'Cache-Control': 'public, max-age=300, s-maxage=300', // Cache for 5 minutes
       },
     })
   } catch (error) {
@@ -126,8 +173,12 @@ ${audiobooks
       <enclosure url="${escapeXml(audiobook.url)}" length="${
       audiobook.size
     }" type="${audiobook.type}"/>
-      <guid isPermaLink="false">${escapeXml(audiobook.url)}</guid>
-      <itunes:duration>${audiobook.duration || ''}</itunes:duration>
+      <guid isPermaLink="false">${escapeXml(audiobook.url)}</guid>${
+      audiobook.duration
+        ? `
+      <itunes:duration>${audiobook.duration}</itunes:duration>`
+        : ''
+    }
     </item>`
   )
   .join('\n')}
@@ -142,4 +193,17 @@ function escapeXml(unsafe: string): string {
     .replace(/>/g, '&gt;')
     .replace(/"/g, '&quot;')
     .replace(/'/g, '&apos;')
+}
+
+function formatDuration(seconds: number): string {
+  const hours = Math.floor(seconds / 3600)
+  const minutes = Math.floor((seconds % 3600) / 60)
+  const secs = Math.floor(seconds % 60)
+
+  if (hours > 0) {
+    return `${hours}:${minutes.toString().padStart(2, '0')}:${secs
+      .toString()
+      .padStart(2, '0')}`
+  }
+  return `${minutes}:${secs.toString().padStart(2, '0')}`
 }

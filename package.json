@@ -36,6 +36,7 @@
     "date-fns": "^2.30.0",
     "dotenv": "^17.2.3",
     "firebase-admin": "^13.5.0",
+    "music-metadata": "^11.9.0",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
     "tinycolor": "^0.0.1"
