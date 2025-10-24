@@ -56,5 +56,10 @@
   "volta": {
     "node": "16.15.1"
   },
+  "prettier": {
+    "semi": false,
+    "singleQuote": true,
+    "trailingComma": "es5"
+  },
   "author": "Ixartz (https://github.com/ixartz)"
 }
