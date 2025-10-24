@@ -132,7 +132,6 @@ export const GET: APIRoute = async ({ site }) => {
     return new Response(rss, {
       headers: {
         'Content-Type': 'application/xml; charset=utf-8',
-        'Cache-Control': 'public, max-age=300, s-maxage=300', // Cache for 5 minutes
       },
     })
   } catch (error) {
