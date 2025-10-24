@@ -12,10 +12,13 @@ interface AudiobookMetadata {
   url: string
   size: number
   type: string
+  guid: string
 }
 
 export const GET: APIRoute = async ({ site }) => {
   try {
+    const siteUrl = site?.toString() || 'https://example.com'
+
     // Get all files from the audiobooks folder
     const [files] = await bucket.getFiles({
       prefix: 'audiobooks/',
@@ -99,6 +102,10 @@ export const GET: APIRoute = async ({ site }) => {
 
         const title =
           (series ? `${series} - ` : '') + (name || 'Untitled') + ` - ${author}`
+
+        // Use file path as stable GUID (won't change when signed URLs regenerate)
+        const guid = `${siteUrl}/audiobooks/${file.name}`
+
         return {
           title,
           author,
@@ -114,6 +121,7 @@ export const GET: APIRoute = async ({ site }) => {
             ? 'audio/x-m4b'
             : 'audio/mpeg',
           duration,
+          guid,
         }
       })
     )
@@ -124,14 +132,13 @@ export const GET: APIRoute = async ({ site }) => {
     console.log(`Found ${audiobooks.length} audiobooks`)
 
     // Generate RSS feed
-    const rss = generateRSS(
-      audiobooks,
-      site?.toString() || 'https://example.com'
-    )
+    const rss = generateRSS(audiobooks, siteUrl)
 
     return new Response(rss, {
       headers: {
         'Content-Type': 'application/xml; charset=utf-8',
+        'Cache-Control':
+          'public, max-age=0, s-maxage=60, stale-while-revalidate=300',
       },
     })
   } catch (error) {
@@ -172,7 +179,7 @@ ${audiobooks
       <enclosure url="${escapeXml(audiobook.url)}" length="${
       audiobook.size
     }" type="${audiobook.type}"/>
-      <guid isPermaLink="false">${escapeXml(audiobook.url)}</guid>${
+      <guid isPermaLink="false">${escapeXml(audiobook.guid)}</guid>${
       audiobook.duration
         ? `
       <itunes:duration>${audiobook.duration}</itunes:duration>`
