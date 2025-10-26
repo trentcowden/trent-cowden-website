@@ -133,14 +133,17 @@ export const GET: APIRoute = async ({ site }) => {
 
 function generateRSS(audiobooks: AudiobookMetadata[], siteUrl: string): string {
   const now = new Date().toUTCString()
+  const feedUrl = `${siteUrl}/api/audiobooks.xml`
 
   return `<?xml version="1.0" encoding="UTF-8"?>
 <rss version="2.0" 
      xmlns:itunes="http://www.itunes.com/dtds/podcast-1.0.dtd"
+     xmlns:atom="http://www.w3.org/2005/Atom"
      xmlns:content="http://purl.org/rss/1.0/modules/content/">
   <channel>
     <title>Trent Cowden's Audiobooks</title>
     <link>${siteUrl}</link>
+    <atom:link href="${feedUrl}" rel="self" type="application/rss+xml"/>
     <description>Personal audiobook collection</description>
     <language>en-us</language>
     <lastBuildDate>${now}</lastBuildDate>
@@ -148,8 +151,9 @@ function generateRSS(audiobooks: AudiobookMetadata[], siteUrl: string): string {
     <itunes:summary>Personal audiobook collection</itunes:summary>
     <itunes:owner>
       <itunes:name>Trent Cowden</itunes:name>
+      <itunes:email>trent.cowden@gmail.com</itunes:email>
     </itunes:owner>
-    <itunes:explicit>no</itunes:explicit>
+    <itunes:explicit>false</itunes:explicit>
     <itunes:category text="Arts">
       <itunes:category text="Books"/>
     </itunes:category>
