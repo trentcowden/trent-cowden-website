@@ -1,6 +1,7 @@
+export const prerender = false
+
 import type { File } from '@google-cloud/storage'
 import type { APIRoute } from 'astro'
-import { parseStream } from 'music-metadata'
 import { bucket } from '../../../firebase'
 
 interface AudiobookMetadata {
@@ -13,6 +14,7 @@ interface AudiobookMetadata {
   size: number
   type: string
   guid: string
+  imageUrl?: string
 }
 
 export const GET: APIRoute = async ({ site }) => {
@@ -39,44 +41,25 @@ export const GET: APIRoute = async ({ site }) => {
           expires: Date.now() + 365 * 24 * 60 * 60 * 1000, // 1 year
         })
 
-        // Get audio duration - check if cached in metadata first
-        let duration: string | undefined
-        if (metadata.metadata?.duration) {
-          // Use cached duration from file metadata
-          duration = metadata.metadata.duration as string
-          console.log(`Using cached duration for ${file.name}: ${duration}`)
-        } else {
-          // Parse duration from file (only for new/uncached files)
+        // Get cached duration
+        const duration = metadata.metadata?.duration as string | undefined
+
+        // Get cached cover image URL
+        let coverImageUrl: string | undefined
+        if (metadata.metadata?.coverImagePath) {
+          const coverPath = metadata.metadata.coverImagePath as string
           try {
-            console.log(`Parsing duration for ${file.name}...`)
-            const stream = file.createReadStream()
-            const audioMetadata = await parseStream(
-              stream,
-              {
-                mimeType: file.name.toLowerCase().endsWith('.m4b')
-                  ? 'audio/mp4'
-                  : 'audio/mpeg',
-              },
-              { duration: true }
-            )
-            console.log(
-              `Audio metadata for ${file.name}:`,
-              audioMetadata.format
-            )
-            if (audioMetadata.format.duration) {
-              duration = formatDuration(audioMetadata.format.duration)
-              console.log(`Formatted duration: ${duration}`)
-              // Cache the duration in file metadata for future requests
-              await file.setMetadata({
-                metadata: {
-                  ...metadata.metadata,
-                  duration,
-                },
-              })
-              console.log(`Cached duration for ${file.name}`)
-            }
+            const coverFile = bucket.file(coverPath)
+            const [coverUrl] = await coverFile.getSignedUrl({
+              action: 'read',
+              expires: Date.now() + 365 * 24 * 60 * 60 * 1000, // 1 year
+            })
+            coverImageUrl = coverUrl
           } catch (error) {
-            console.error(`Failed to get duration for ${file.name}:`, error)
+            console.error(
+              `Failed to get cover image URL for ${file.name}:`,
+              error
+            )
           }
         }
 
@@ -122,6 +105,7 @@ export const GET: APIRoute = async ({ site }) => {
             : 'audio/mpeg',
           duration,
           guid,
+          imageUrl: coverImageUrl,
         }
       })
     )
@@ -184,6 +168,11 @@ ${audiobooks
         ? `
       <itunes:duration>${audiobook.duration}</itunes:duration>`
         : ''
+    }${
+      audiobook.imageUrl
+        ? `
+      <itunes:image href="${escapeXml(audiobook.imageUrl)}"/>`
+        : ''
     }
     </item>`
   )
@@ -199,17 +188,4 @@ function escapeXml(unsafe: string): string {
     .replace(/>/g, '&gt;')
     .replace(/"/g, '&quot;')
     .replace(/'/g, '&apos;')
-}
-
-function formatDuration(seconds: number): string {
-  const hours = Math.floor(seconds / 3600)
-  const minutes = Math.floor((seconds % 3600) / 60)
-  const secs = Math.floor(seconds % 60)
-
-  if (hours > 0) {
-    return `${hours}:${minutes.toString().padStart(2, '0')}:${secs
-      .toString()
-      .padStart(2, '0')}`
-  }
-  return `${minutes}:${secs.toString().padStart(2, '0')}`
 }
