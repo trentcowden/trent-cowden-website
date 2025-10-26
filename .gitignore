@@ -13,6 +13,7 @@ pnpm-debug.log*
 
 # environment variables
 .env*
+.astro
 
 # macOS-specific files
 .DS_Store
