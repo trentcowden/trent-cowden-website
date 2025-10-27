@@ -175,7 +175,7 @@ ${audiobooks
     }${
       audiobook.imageUrl
         ? `
-      <itunes:img href="${escapeXml(audiobook.imageUrl)}"/>`
+      <itunes:image href="${escapeXml(audiobook.imageUrl)}"/>`
         : ''
     }
     </item>`
