@@ -84,7 +84,7 @@ export const GET: APIRoute = async ({ site }) => {
         }
 
         const title =
-          (series ? `${series} - ` : '') + (name || 'Untitled') + ` - ${author}`
+          (series ? `${series}: ` : '') + (name || 'Untitled') + ` by ${author}`
 
         // Use file path as stable GUID (won't change when signed URLs regenerate)
         const guid = `${siteUrl}/audiobooks/${file.name}`
