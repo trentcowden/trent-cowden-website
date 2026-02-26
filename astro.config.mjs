@@ -1,7 +1,7 @@
 import react from '@astrojs/react'
 import sitemap from '@astrojs/sitemap'
 import tailwind from '@astrojs/tailwind'
-import vercelStatic from '@astrojs/vercel/static'
+import vercel from '@astrojs/vercel'
 import robotsTxt from 'astro-robots-txt'
 import { defineConfig } from 'astro/config'
 
@@ -17,5 +17,5 @@ export default defineConfig({
   },
   integrations: [react(), tailwind({}), sitemap(), robotsTxt()],
   output: 'static',
-  adapter: vercelStatic(),
+  adapter: vercel(),
 })
