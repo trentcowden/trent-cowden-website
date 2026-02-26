@@ -44,8 +44,7 @@ export const GET: APIRoute = async ({ site }) => {
       const hour = PRAYER_HOURS[type] ?? 7
       const pubDate = new Date(`${date}T${String(hour).padStart(2, '0')}:00:00Z`)
 
-      const prayerTitle = PRAYER_TITLES[type] ?? type
-      const title = `Lectio 365 ${prayerTitle} — ${date}`
+      const title = PRAYER_TITLES[type] ?? type
 
       return {
         date,
