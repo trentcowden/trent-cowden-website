@@ -9,10 +9,11 @@ const PRAYER_TITLES: Record<string, string> = {
   night: 'Night Prayer',
 }
 
-const PRAYER_HOURS: Record<string, number> = {
-  morning: 7,
-  midday: 12,
-  night: 21,
+// Hours in Pacific time (UTC-8), stored as UTC offsets
+const PRAYER_HOURS_UTC: Record<string, number> = {
+  morning: 15, // 7 AM Pacific
+  midday: 20, // 12 PM Pacific
+  night: 5, // 9 PM Pacific (next day UTC)
 }
 
 interface LectioEpisode {
@@ -41,7 +42,7 @@ export const GET: APIRoute = async ({ site }) => {
       const date = match?.[1] ?? ''
       const type = match?.[2] ?? ''
 
-      const hour = PRAYER_HOURS[type] ?? 7
+      const hour = PRAYER_HOURS_UTC[type] ?? 15
       const pubDate = new Date(`${date}T${String(hour).padStart(2, '0')}:00:00Z`)
 
       const title = PRAYER_TITLES[type] ?? type
@@ -60,7 +61,7 @@ export const GET: APIRoute = async ({ site }) => {
     // Sort newest first, then night > midday > morning within same day
     episodes.sort((a, b) => {
       if (a.date !== b.date) return b.date.localeCompare(a.date)
-      return (PRAYER_HOURS[b.type] ?? 0) - (PRAYER_HOURS[a.type] ?? 0)
+      return (PRAYER_HOURS_UTC[b.type] ?? 0) - (PRAYER_HOURS_UTC[a.type] ?? 0)
     })
 
     const rss = generateRSS(episodes, siteUrl)
