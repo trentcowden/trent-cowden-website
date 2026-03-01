@@ -44,6 +44,7 @@ export const GET: APIRoute = async ({ site }) => {
 
       const hour = PRAYER_HOURS_UTC[type] ?? 15
       const pubDate = new Date(`${date}T${String(hour).padStart(2, '0')}:00:00Z`)
+      if (type === 'night') pubDate.setUTCDate(pubDate.getUTCDate() + 1)
 
       const title = PRAYER_TITLES[type] ?? type
 
