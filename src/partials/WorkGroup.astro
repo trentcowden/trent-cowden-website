@@ -52,8 +52,10 @@ const { total, incomplete } = group.counts
     {
       group.tasks.map((task) => {
         const done = task.status !== 'incomplete'
-        // Someday tasks are backlog: muted, but not struck through like done ones.
-        const backlog = !done && task.start === 'Someday'
+        // Backlog = the "Someday" bucket with no scheduled date. A Someday task
+        // that DOES have a start_date is actually an Upcoming (future-scheduled)
+        // task, not backlog. Muted, but not struck through like done ones.
+        const backlog = !done && task.start === 'Someday' && !task.startDate
         const deadline = fmtDate(task.deadline)
         return (
           <li class='flex gap-3'>
