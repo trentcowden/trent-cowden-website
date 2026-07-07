@@ -5,10 +5,13 @@ export const WORK_BLOB_PATH = 'work/data.json'
 
 export type TaskStatus = 'incomplete' | 'completed' | 'canceled'
 
+export type TaskStart = 'Inbox' | 'Anytime' | 'Someday' | null
+
 export interface WorkTask {
   uuid: string
   title: string
   status: TaskStatus
+  start: TaskStart // 'Someday' = backlog
   notes: string
   deadline: string | null
   startDate: string | null

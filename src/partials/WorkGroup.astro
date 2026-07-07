@@ -52,13 +52,15 @@ const { total, incomplete } = group.counts
     {
       group.tasks.map((task) => {
         const done = task.status !== 'incomplete'
+        // Someday tasks are backlog: muted, but not struck through like done ones.
+        const backlog = !done && task.start === 'Someday'
         const deadline = fmtDate(task.deadline)
         return (
           <li class='flex gap-3'>
             <span
               class:list={[
                 'select-none pt-0.5 text-sm',
-                done ? 'text-fg2' : 'text-p1',
+                done || backlog ? 'text-fg2' : 'text-p1',
               ]}
             >
               {marker(task.status)}
@@ -67,10 +69,17 @@ const { total, incomplete } = group.counts
               <p
                 class:list={[
                   'leading-snug',
-                  done ? 'text-fg2 line-through' : 'text-fg1',
+                  done && 'text-fg2 line-through',
+                  backlog && 'text-fg2',
+                  !done && !backlog && 'text-fg1',
                 ]}
               >
                 {task.title || '(untitled)'}
+                {backlog && (
+                  <span class='ml-2 whitespace-nowrap rounded bg-bg3 px-1.5 py-0.5 text-xs uppercase tracking-wide text-fg2'>
+                    backlog
+                  </span>
+                )}
                 {deadline && (
                   <span class='ml-2 whitespace-nowrap rounded bg-bg3 px-1.5 py-0.5 text-xs text-fg2'>
                     due {deadline}
