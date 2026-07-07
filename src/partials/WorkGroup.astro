@@ -28,16 +28,19 @@ function fmtDate(value: string | null): string | null {
 
 const title = group.title ?? 'No project'
 
-// A time-estimate tag like "4h", "30m", or "1.5h" -> minutes. Non-duration
-// tags (anything that doesn't match) contribute 0.
 function tagMinutes(tag: string): number {
   const m = tag
     .trim()
     .toLowerCase()
-    .match(/^(\d+(?:\.\d+)?)\s*(h|hr|hrs|hour|hours|m|min|mins|minute|minutes)$/)
-  if (!m) return 0
+    .match(
+      /^(\d+(?:\.\d+)?)\s*(w|wk|wks|week|weeks|h|hr|hrs|hour|hours|m|min|mins|minute|minutes)$/
+    )
+  if (!m || !m[1] || !m[2]) return 0
   const value = parseFloat(m[1])
-  return m[2].startsWith('h') ? value * 60 : value
+  const unit = m[2]
+  if (unit.startsWith('w')) return value * 40 * 60
+  if (unit.startsWith('h')) return value * 60
+  return value
 }
 
 const taskMinutes = (t: WorkTask): number =>
@@ -60,8 +63,8 @@ const estimate =
   totalMin === 0
     ? null
     : openMin === totalMin
-      ? fmtDuration(totalMin)
-      : `${fmtDuration(openMin)} left · ${fmtDuration(totalMin)} total`
+    ? fmtDuration(totalMin)
+    : `${fmtDuration(openMin)} left · ${fmtDuration(totalMin)} total`
 ---
 
 <section class='mb-10'>
@@ -77,7 +80,25 @@ const estimate =
         title
       )}
     </h2>
-    {estimate && <span class='shrink-0 text-sm text-fg2'>{estimate}</span>}
+    {estimate && (
+      <span class="flex shrink-0 items-center gap-1 text-sm text-fg2">
+        <svg
+          xmlns="http://www.w3.org/2000/svg"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="2"
+          stroke-linecap="round"
+          stroke-linejoin="round"
+          class="h-3.5 w-3.5"
+          aria-hidden="true"
+        >
+          <circle cx="12" cy="12" r="9" />
+          <path d="M12 7v5l3 2" />
+        </svg>
+        {estimate}
+      </span>
+    )}
   </div>
 
   <ul class='space-y-3'>

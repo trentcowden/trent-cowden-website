@@ -20,26 +20,8 @@ const description = `A read-only view of my "${groupTitle}" work tasks.`
 ---
 
 <Base head={{ title, description }}>
-  <main class='mx-auto max-w-3xl px-4 py-12'>
-    <a href='/work' class='text-sm text-fg2 hover:text-p1'>← All headings</a>
-
-    <header class='mb-8 mt-3'>
-      <h1 class='text-3xl font-bold text-fg1'>{groupTitle}</h1>
-      {
-        data && (
-          <p class='mt-1 text-sm text-fg2'>{data.project.title}</p>
-        )
-      }
-    </header>
-
-    {
-      !data ? (
-        <p class='text-fg2'>
-          No data yet — the sync hasn’t run. Check back shortly.
-        </p>
-      ) : group ? (
-        <WorkGroup group={group} />
-      ) : null
-    }
+  <main class='mx-auto max-w-3xl px-4 py-12 flex gap-4 flex-col'>
+    <a href='/work' class='text-sm text-fg2 hover:text-p1'>← All projects</a>
+    {group ? <WorkGroup group={group} /> : null}
   </main>
 </Base>
