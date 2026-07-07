@@ -27,6 +27,41 @@ function fmtDate(value: string | null): string | null {
 }
 
 const title = group.title ?? 'No project'
+
+// A time-estimate tag like "4h", "30m", or "1.5h" -> minutes. Non-duration
+// tags (anything that doesn't match) contribute 0.
+function tagMinutes(tag: string): number {
+  const m = tag
+    .trim()
+    .toLowerCase()
+    .match(/^(\d+(?:\.\d+)?)\s*(h|hr|hrs|hour|hours|m|min|mins|minute|minutes)$/)
+  if (!m) return 0
+  const value = parseFloat(m[1])
+  return m[2].startsWith('h') ? value * 60 : value
+}
+
+const taskMinutes = (t: WorkTask): number =>
+  (t.tags || []).reduce((sum, tag) => sum + tagMinutes(tag), 0)
+
+// 90 -> "1h 30m", 240 -> "4h", 30 -> "30m", 0 -> "0h"
+function fmtDuration(mins: number): string {
+  const h = Math.floor(mins / 60)
+  const m = Math.round(mins % 60)
+  return [h && `${h}h`, m && `${m}m`].filter(Boolean).join(' ') || '0h'
+}
+
+const openMin = group.tasks
+  .filter((t) => t.status === 'incomplete')
+  .reduce((sum, t) => sum + taskMinutes(t), 0)
+const totalMin = group.tasks.reduce((sum, t) => sum + taskMinutes(t), 0)
+
+// Collapse to a single value when nothing's been done yet.
+const estimate =
+  totalMin === 0
+    ? null
+    : openMin === totalMin
+      ? fmtDuration(totalMin)
+      : `${fmtDuration(openMin)} left · ${fmtDuration(totalMin)} total`
 ---
 
 <section class='mb-10'>
@@ -42,6 +77,7 @@ const title = group.title ?? 'No project'
         title
       )}
     </h2>
+    {estimate && <span class='shrink-0 text-sm text-fg2'>{estimate}</span>}
   </div>
 
   <ul class='space-y-3'>
