@@ -26,72 +26,71 @@ function fmtDate(value: string | null): string | null {
   })
 }
 
-const title = group.title ?? 'No heading'
-const { total, incomplete } = group.counts
+const title = group.title ?? 'No project'
 ---
 
 <section class='mb-10'>
-  <div class='mb-4 flex items-baseline justify-between gap-3 border-b border-bd pb-2'>
+  <div
+    class='mb-4 flex items-baseline justify-between gap-3 border-b border-bd pb-2'
+  >
     <h2 class='text-xl font-semibold text-fg1'>
-      {
-        headingHref ? (
-          <a href={headingHref} class='hover:text-p1'>
-            {title}
-          </a>
-        ) : (
-          title
-        )
-      }
+      {headingHref ? (
+        <a href={headingHref} class="hover:text-p1">
+          {title}
+        </a>
+      ) : (
+        title
+      )}
     </h2>
-    <span class='shrink-0 text-sm text-fg2'>
-      {incomplete} open / {total} total
-    </span>
   </div>
 
   <ul class='space-y-3'>
-    {
-      group.tasks.map((task) => {
-        const done = task.status !== 'incomplete'
-        // Backlog = the "Someday" bucket with no scheduled date. A Someday task
-        // that DOES have a start_date is actually an Upcoming (future-scheduled)
-        // task, not backlog. Muted, but not struck through like done ones.
-        const backlog = !done && task.start === 'Someday' && !task.startDate
-        const deadline = fmtDate(task.deadline)
-        return (
-          <li class='flex gap-3'>
-            <span
+    {group.tasks.map((task) => {
+      const done = task.status !== 'incomplete'
+      // Backlog = the "Someday" bucket with no scheduled date. A Someday task
+      // that DOES have a start_date is actually an Upcoming (future-scheduled)
+      // task, not backlog. Muted, but not struck through like done ones.
+      const backlog = !done && task.start === 'Someday' && !task.startDate
+      const deadline = fmtDate(task.deadline)
+      return (
+        <li class="flex gap-3">
+          <span
+            class:list={[
+              'select-none pt-0.5 text-sm',
+              done || backlog ? 'text-fg2' : 'text-p1',
+            ]}
+          >
+            {marker(task.status)}
+          </span>
+          <div class="min-w-0">
+            <p
               class:list={[
-                'select-none pt-0.5 text-sm',
-                done || backlog ? 'text-fg2' : 'text-p1',
+                'leading-snug',
+                done && 'text-fg2 line-through',
+                backlog && 'text-fg2',
+                !done && !backlog && 'text-fg1',
               ]}
             >
-              {marker(task.status)}
-            </span>
-            <div class='min-w-0'>
-              <p
-                class:list={[
-                  'leading-snug',
-                  done && 'text-fg2 line-through',
-                  backlog && 'text-fg2',
-                  !done && !backlog && 'text-fg1',
-                ]}
-              >
-                {task.title || '(untitled)'}
-                {backlog && (
-                  <span class='ml-2 whitespace-nowrap rounded bg-bg3 px-1.5 py-0.5 text-xs uppercase tracking-wide text-fg2'>
-                    backlog
-                  </span>
-                )}
-                {deadline && (
-                  <span class='ml-2 whitespace-nowrap rounded bg-bg3 px-1.5 py-0.5 text-xs text-fg2'>
-                    due {deadline}
-                  </span>
-                )}
-              </p>
-            </div>
-          </li>
-        )
-      })
-    }
+              {task.title || '(untitled)'}
+              {backlog && (
+                <span class="ml-2 whitespace-nowrap rounded bg-bg3 px-1.5 py-0.5 text-xs uppercase tracking-wide text-fg2">
+                  backlog
+                </span>
+              )}
+              {deadline && (
+                <span class="ml-2 whitespace-nowrap rounded bg-bg3 px-1.5 py-0.5 text-xs text-fg2">
+                  due {deadline}
+                </span>
+              )}
+              {(task.tags || []).map((tag) => (
+                <span class="ml-2 whitespace-nowrap rounded bg-bg3 px-1.5 py-0.5 text-xs text-fg2">
+                  #{tag}
+                </span>
+              ))}
+            </p>
+          </div>
+        </li>
+      )
+    })}
   </ul>
 </section>

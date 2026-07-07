@@ -12,6 +12,7 @@ export interface WorkTask {
   title: string
   status: TaskStatus
   start: TaskStart // 'Someday' = backlog
+  tags: string[]
   deadline: string | null
   startDate: string | null
   stopDate: string | null
@@ -37,7 +38,12 @@ export interface WorkData {
  * sync has never run (no blob yet) or the data can't be read/parsed.
  */
 export async function getWorkData(): Promise<WorkData | null> {
-  const { blobs } = await list({ prefix: WORK_BLOB_PATH })
+  // In prod Vercel injects BLOB_READ_WRITE_TOKEN into process.env. Under
+  // `astro dev` it's only in import.meta.env (from .env), so pass it explicitly.
+  const token =
+    import.meta.env.BLOB_READ_WRITE_TOKEN || process.env.BLOB_READ_WRITE_TOKEN
+
+  const { blobs } = await list({ prefix: WORK_BLOB_PATH, token })
   const blob = blobs.find((b) => b.pathname === WORK_BLOB_PATH)
   if (!blob) return null
 
