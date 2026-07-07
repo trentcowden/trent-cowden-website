@@ -1,0 +1,91 @@
+---
+import type { WorkGroup, WorkTask } from '@/utils/work'
+
+export interface Props {
+  group: WorkGroup
+  headingHref?: string // if set, the heading title links here
+}
+
+const { group, headingHref } = Astro.props as Props
+
+function marker(status: WorkTask['status']): string {
+  if (status === 'completed') return '✓'
+  if (status === 'canceled') return '✕'
+  return '○'
+}
+
+// e.g. "2026-05-26 11:57:09" -> "May 26, 2026"
+function fmtDate(value: string | null): string | null {
+  if (!value) return null
+  const d = new Date(value.replace(' ', 'T'))
+  if (Number.isNaN(d.getTime())) return null
+  return d.toLocaleDateString('en-US', {
+    year: 'numeric',
+    month: 'short',
+    day: 'numeric',
+  })
+}
+
+const title = group.title ?? 'No heading'
+const { total, incomplete } = group.counts
+---
+
+<section class='mb-10'>
+  <div class='mb-4 flex items-baseline justify-between gap-3 border-b border-bd pb-2'>
+    <h2 class='text-xl font-semibold text-fg1'>
+      {
+        headingHref ? (
+          <a href={headingHref} class='hover:text-p1'>
+            {title}
+          </a>
+        ) : (
+          title
+        )
+      }
+    </h2>
+    <span class='shrink-0 text-sm text-fg2'>
+      {incomplete} open / {total} total
+    </span>
+  </div>
+
+  <ul class='space-y-3'>
+    {
+      group.tasks.map((task) => {
+        const done = task.status !== 'incomplete'
+        const deadline = fmtDate(task.deadline)
+        return (
+          <li class='flex gap-3'>
+            <span
+              class:list={[
+                'select-none pt-0.5 text-sm',
+                done ? 'text-fg2' : 'text-p1',
+              ]}
+            >
+              {marker(task.status)}
+            </span>
+            <div class='min-w-0'>
+              <p
+                class:list={[
+                  'leading-snug',
+                  done ? 'text-fg2 line-through' : 'text-fg1',
+                ]}
+              >
+                {task.title || '(untitled)'}
+                {deadline && (
+                  <span class='ml-2 whitespace-nowrap rounded bg-bg3 px-1.5 py-0.5 text-xs text-fg2'>
+                    due {deadline}
+                  </span>
+                )}
+              </p>
+              {task.notes && (
+                <p class='mt-1 whitespace-pre-wrap text-sm text-fg2'>
+                  {task.notes}
+                </p>
+              )}
+            </div>
+          </li>
+        )
+      })
+    }
+  </ul>
+</section>

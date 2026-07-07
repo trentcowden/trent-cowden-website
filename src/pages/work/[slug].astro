@@ -1,0 +1,45 @@
+---
+export const prerender = false
+
+import WorkGroup from '@/partials/WorkGroup.astro'
+import Base from '@/templates/Base.astro'
+import { getWorkData } from '@/utils/work'
+
+const { slug } = Astro.params
+
+const data = await getWorkData()
+const group = data?.groups.find((g) => g.slug === slug)
+
+if (data && !group) {
+  return new Response(null, { status: 404, statusText: 'Not Found' })
+}
+
+const groupTitle = group?.title ?? 'No heading'
+const title = data ? `${groupTitle} — ${data.project.title}` : 'Work — Tasks'
+const description = `A read-only view of my "${groupTitle}" work tasks.`
+---
+
+<Base head={{ title, description }}>
+  <main class='mx-auto max-w-3xl px-4 py-12'>
+    <a href='/work' class='text-sm text-fg2 hover:text-p1'>← All headings</a>
+
+    <header class='mb-8 mt-3'>
+      <h1 class='text-3xl font-bold text-fg1'>{groupTitle}</h1>
+      {
+        data && (
+          <p class='mt-1 text-sm text-fg2'>{data.project.title}</p>
+        )
+      }
+    </header>
+
+    {
+      !data ? (
+        <p class='text-fg2'>
+          No data yet — the sync hasn’t run. Check back shortly.
+        </p>
+      ) : group ? (
+        <WorkGroup group={group} />
+      ) : null
+    }
+  </main>
+</Base>
