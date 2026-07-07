@@ -12,7 +12,6 @@ export interface WorkTask {
   title: string
   status: TaskStatus
   start: TaskStart // 'Someday' = backlog
-  notes: string
   deadline: string | null
   startDate: string | null
   stopDate: string | null
