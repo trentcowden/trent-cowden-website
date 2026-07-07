@@ -1,7 +1,7 @@
 ---
 export const prerender = false
 
-import AssignButton from '@/partials/AssignButton.astro'
+import AssignForm from '@/partials/AssignForm.astro'
 import WorkGroup from '@/partials/WorkGroup.astro'
 import Base from '@/templates/Base.astro'
 import { getWorkData } from '@/utils/work'
@@ -22,10 +22,8 @@ const description = `A read-only view of my "${groupTitle}" work tasks.`
 
 <Base head={{ title, description }}>
   <main class='mx-auto max-w-3xl px-4 py-12 flex gap-4 flex-col'>
-    <div class='flex items-center justify-between gap-4'>
-      <a href='/work' class='text-sm text-fg2 hover:text-p1'>← All projects</a>
-      <AssignButton project={group?.title} />
-    </div>
+    <a href='/work' class='text-sm text-fg2 hover:text-p1'>← All projects</a>
+    <AssignForm project={group?.title} />
     {group ? <WorkGroup group={group} /> : null}
   </main>
 </Base>
