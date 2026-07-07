@@ -3,7 +3,7 @@ import {
   NavMenu,
   NavMenuItem,
   Section,
-} from 'astro-boilerplate-components';
+} from 'astro-boilerplate-components'
 
 const Navbar = () => (
   <Section>
@@ -19,10 +19,10 @@ const Navbar = () => (
         <NavMenuItem href="https://buymeacoffee.com/trentcowden">
           Buy Me a Coffee
         </NavMenuItem>
-        <NavMenuItem href="mailto:hello@trentcowden.com">Email Me</NavMenuItem>
+        <NavMenuItem href="mailto:trent@trentcowden.com">Email Me</NavMenuItem>
       </NavMenu>
     </NavbarTwoColumns>
   </Section>
-);
+)
 
-export { Navbar };
+export { Navbar }
