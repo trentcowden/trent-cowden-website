@@ -5,7 +5,7 @@ import { randomUUID } from 'node:crypto'
 import type { APIRoute } from 'astro'
 import { put } from '@vercel/blob'
 
-import { WORK_BLOB_BASE } from '@/utils/work'
+import { WORK_BLOB_BASE, workBlobToken } from '@/utils/work'
 
 // Single queue file (an array). Kept as one blob so draining an empty queue
 // reads by URL (free) instead of calling list() (an advanced operation).
@@ -20,9 +20,6 @@ export interface QueueItem {
   project: string | null
   createdAt: string
 }
-
-export const blobToken = () =>
-  import.meta.env.BLOB_READ_WRITE_TOKEN || process.env.BLOB_READ_WRITE_TOKEN
 
 /** Read the queue by its fixed public URL — no list()/head(). */
 export async function readQueue(): Promise<QueueItem[]> {
@@ -45,7 +42,7 @@ export async function writeQueue(items: QueueItem[]): Promise<void> {
     addRandomSuffix: false,
     allowOverwrite: true,
     cacheControlMaxAge: 0,
-    token: blobToken(),
+    token: workBlobToken(),
   })
 }
 

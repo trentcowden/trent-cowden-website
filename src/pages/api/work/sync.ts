@@ -3,7 +3,7 @@ export const prerender = false
 import type { APIRoute } from 'astro'
 import { put } from '@vercel/blob'
 
-import { WORK_BLOB_PATH } from '@/utils/work'
+import { WORK_BLOB_PATH, workBlobToken } from '@/utils/work'
 
 export const POST: APIRoute = async ({ request }) => {
   const secret = process.env.SYNC_SECRET
@@ -28,6 +28,7 @@ export const POST: APIRoute = async ({ request }) => {
     allowOverwrite: true,
     // Data changes hourly; don't let CDN serve it stale for long.
     cacheControlMaxAge: 60,
+    token: workBlobToken(),
   })
 
   console.log(`work sync: stored ${body.length} bytes at ${blob.url}`)

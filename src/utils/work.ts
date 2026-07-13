@@ -1,6 +1,10 @@
-import { BLOB_BASE_URL } from '@/utils/blob'
+// The work todos live in their own Blob store (on the Pro account), separate
+// from lectio. Both come from env — set WORK_BLOB_BASE_URL and WORK_BLOB_TOKEN.
+export const WORK_BLOB_BASE =
+  import.meta.env.WORK_BLOB_BASE_URL || process.env.WORK_BLOB_BASE_URL
 
-export const WORK_BLOB_BASE = BLOB_BASE_URL
+export const workBlobToken = () =>
+  import.meta.env.WORK_BLOB_TOKEN || process.env.WORK_BLOB_TOKEN
 
 // Fixed pathname the sync endpoint writes to and the /work pages read from.
 export const WORK_BLOB_PATH = 'work/data.json'
