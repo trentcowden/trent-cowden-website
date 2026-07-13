@@ -1,4 +1,10 @@
-import { list } from '@vercel/blob'
+// Public base URL of the Vercel Blob store. Reading blobs by their fixed URL
+// is free Data Transfer; calling list()/head() would burn "advanced operations".
+// Overridable via env so switching to a new store is a config change, not code.
+export const WORK_BLOB_BASE =
+  import.meta.env.BLOB_BASE_URL ||
+  process.env.BLOB_BASE_URL ||
+  'https://kmsfokjxxwt6l5xp.public.blob.vercel-storage.com'
 
 // Fixed pathname the sync endpoint writes to and the /work pages read from.
 export const WORK_BLOB_PATH = 'work/data.json'
@@ -38,17 +44,9 @@ export interface WorkData {
  * sync has never run (no blob yet) or the data can't be read/parsed.
  */
 export async function getWorkData(): Promise<WorkData | null> {
-  // In prod Vercel injects BLOB_READ_WRITE_TOKEN into process.env. Under
-  // `astro dev` it's only in import.meta.env (from .env), so pass it explicitly.
-  const token =
-    import.meta.env.BLOB_READ_WRITE_TOKEN || process.env.BLOB_READ_WRITE_TOKEN
-
-  const { blobs } = await list({ prefix: WORK_BLOB_PATH, token })
-  const blob = blobs.find((b) => b.pathname === WORK_BLOB_PATH)
-  if (!blob) return null
-
-  // Cache-bust the CDN so pages reflect the most recent sync.
-  const res = await fetch(`${blob.url}?t=${Date.now()}`, {
+  // Read by fixed public URL (free Data Transfer) — no list()/head(). Cache-bust
+  // so pages reflect the most recent sync.
+  const res = await fetch(`${WORK_BLOB_BASE}/${WORK_BLOB_PATH}?t=${Date.now()}`, {
     cache: 'no-store',
   })
   if (!res.ok) return null
