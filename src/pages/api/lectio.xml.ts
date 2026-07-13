@@ -1,7 +1,12 @@
 export const prerender = false
 
 import type { APIRoute } from 'astro'
-import { list } from '@vercel/blob'
+
+import { BLOB_BASE_URL } from '@/utils/blob'
+import {
+  LECTIO_MANIFEST_PATH,
+  type LectioManifestItem,
+} from '@/pages/api/lectio/cron'
 
 const PRAYER_TITLES: Record<string, string> = {
   morning: 'Morning Prayer',
@@ -30,32 +35,33 @@ export const GET: APIRoute = async ({ site }) => {
   try {
     const siteUrl = site?.toString().replace(/\/$/, '') || 'https://trentcowden.com'
 
-    const { blobs } = await list({ prefix: 'lectio/' })
+    // Read the manifest by fixed URL (free) instead of calling list().
+    const res = await fetch(`${BLOB_BASE_URL}/${LECTIO_MANIFEST_PATH}?t=${Date.now()}`, {
+      cache: 'no-store',
+    })
+    let manifest: LectioManifestItem[] = []
+    if (res.ok) {
+      try {
+        const data = await res.json()
+        if (Array.isArray(data)) manifest = data
+      } catch {
+        // fall through to an empty feed
+      }
+    }
 
-    const audioBlobs = blobs.filter((b) =>
-      b.pathname.toLowerCase().endsWith('.mp3')
-    )
-
-    const episodes: LectioEpisode[] = audioBlobs.map((blob) => {
-      const filename = blob.pathname.replace('lectio/', '').replace('.mp3', '')
-      const match = filename.match(/^(\d{4}-\d{2}-\d{2})-(\w+)$/)
-      const date = match?.[1] ?? ''
-      const type = match?.[2] ?? ''
-
+    const episodes: LectioEpisode[] = manifest.map(({ date, type, url, size }) => {
       const hour = PRAYER_HOURS_UTC[type] ?? 15
       const pubDate = new Date(`${date}T${String(hour).padStart(2, '0')}:00:00Z`)
       if (type === 'night') pubDate.setUTCDate(pubDate.getUTCDate() + 1)
 
-      const title = PRAYER_TITLES[type] ?? type
-
       return {
         date,
         type,
-        title,
+        title: PRAYER_TITLES[type] ?? type,
         pubDate,
-        url: blob.url,
-        size: blob.size,
-        guid: `${siteUrl}/lectio/${filename}`,
+        url,
+        size,
+        guid: `${siteUrl}/lectio/${date}-${type}`,
       }
     })
 

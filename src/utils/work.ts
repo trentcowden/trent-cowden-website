@@ -1,10 +1,6 @@
-// Public base URL of the Vercel Blob store. Reading blobs by their fixed URL
-// is free Data Transfer; calling list()/head() would burn "advanced operations".
-// Overridable via env so switching to a new store is a config change, not code.
-export const WORK_BLOB_BASE =
-  import.meta.env.BLOB_BASE_URL ||
-  process.env.BLOB_BASE_URL ||
-  'https://kmsfokjxxwt6l5xp.public.blob.vercel-storage.com'
+import { BLOB_BASE_URL } from '@/utils/blob'
+
+export const WORK_BLOB_BASE = BLOB_BASE_URL
 
 // Fixed pathname the sync endpoint writes to and the /work pages read from.
 export const WORK_BLOB_PATH = 'work/data.json'

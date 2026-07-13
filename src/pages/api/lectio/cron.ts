@@ -9,18 +9,29 @@ const CDN_BASE =
 
 const PRAYER_TYPES = ['morning', 'midday', 'night'] as const
 
+// Manifest the RSS feed reads by URL, so /api/lectio.xml never calls list().
+export const LECTIO_MANIFEST_PATH = 'lectio/index.json'
+
+export interface LectioManifestItem {
+  date: string
+  type: string
+  url: string
+  size: number
+}
+
 function formatDate(d: Date): string {
   return d.toISOString().split('T')[0]
 }
 
 export const GET: APIRoute = async () => {
   const results: { filename: string; status: string }[] = []
+  const episodes: LectioManifestItem[] = []
   const today = formatDate(new Date())
 
-  // Delete old files to keep storage lean
+  // Delete stale audio to keep storage lean (leave the manifest in place).
   const { blobs } = await list({ prefix: 'lectio/' })
   for (const blob of blobs) {
-    if (!blob.pathname.includes(today)) {
+    if (blob.pathname.endsWith('.mp3') && !blob.pathname.includes(today)) {
       await del(blob.url)
       results.push({ filename: blob.pathname, status: 'deleted' })
     }
@@ -36,6 +47,7 @@ export const GET: APIRoute = async () => {
     const existing = blobs.find((b) => b.pathname === storagePath)
     if (existing) {
       results.push({ filename, status: 'skipped' })
+      episodes.push({ date: today, type, url: existing.url, size: existing.size })
       continue
     }
 
@@ -64,14 +76,24 @@ export const GET: APIRoute = async () => {
     }
 
     // Upload to Vercel Blob
-    await put(storagePath, mp3Data, {
+    const uploaded = await put(storagePath, mp3Data, {
       access: 'public',
       contentType: 'audio/mpeg',
       addRandomSuffix: false,
     })
 
     results.push({ filename, status: 'uploaded' })
+    episodes.push({ date: today, type, url: uploaded.url, size: mp3Data.length })
   }
+
+  // Write the manifest the RSS feed reads (avoids list() on every request).
+  await put(LECTIO_MANIFEST_PATH, JSON.stringify(episodes), {
+    access: 'public',
+    contentType: 'application/json',
+    addRandomSuffix: false,
+    allowOverwrite: true,
+    cacheControlMaxAge: 0,
+  })
 
   const uploaded = results.filter((r) => r.status === 'uploaded').length
   const skipped = results.filter((r) => r.status === 'skipped').length
